@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>塗装（鋼橋） 1級 学科クイズ - R5完全収録</title>
+<style>
+  :root {
+    --bg: #0b0d10; --card:#12161c; --muted:#9aa4b2; --text:#e6edf3;
+    --ok:#2ea043; --ng:#f85149; --accent:#58a6ff; --warn:#d29922;
+    --border:#2b313a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans JP","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:var(--bg);color:var(--text);}
+  header{position:sticky;top:0;z-index:10;background:rgba(11,13,16,.92);backdrop-filter: blur(10px);border-bottom:1px solid var(--border);}
+  .wrap{max-width:1050px;margin:0 auto;padding:14px 16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .title{font-weight:700;font-size:16px;}
+  .pill{border:1px solid var(--border);background:transparent;color:var(--text);padding:8px 10px;border-radius:999px;cursor:pointer}
+  .pill.active{border-color:var(--accent);color:var(--accent);}
+  .btn{border:1px solid var(--border);background:var(--card);color:var(--text);padding:9px 12px;border-radius:10px;cursor:pointer}
+  .btn.primary{border-color:var(--accent);}
+  .btn.danger{border-color:var(--ng);color:var(--ng);}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-bottom:8px;}
+  .qstem{font-size:15px;line-height:1.6;white-space:pre-wrap;}
+  .choices{margin-top:12px;display:grid;gap:8px;}
+  .choice{border:1px solid var(--border);background:#0f141a;padding:10px 12px;border-radius:12px;cursor:pointer;text-align:left;}
+  .choice:hover{border-color:#3d4653;}
+  .choice.correct{border-color:rgba(46,160,67,.9);box-shadow:0 0 0 1px rgba(46,160,67,.35) inset;}
+  .choice.wrong{border-color:rgba(248,81,73,.9);box-shadow:0 0 0 1px rgba(248,81,73,.35) inset;}
+  .choice.chosen{outline:2px solid rgba(88,166,255,.35);}
+  .ex{margin-top:12px;border-top:1px dashed var(--border);padding-top:12px;color:var(--text);}
+  .ex .label{display:inline-block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .refs{margin-top:8px;color:var(--muted);font-size:12px;line-height:1.5;}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+  .tag{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:4px 8px;border-radius:999px;}
+  .footer{color:var(--muted);font-size:12px;margin:20px 0 30px;}
+  .two{display:grid;grid-template-columns:1fr;gap:12px;}
+  @media (min-width: 900px){ .two{grid-template-columns: 1.1fr .9fr;} }
+  input, select{background:#0f141a;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;}
+  .kpi{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi .box{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#0f141a;min-width:130px;}
+  .kpi .num{font-weight:700;font-size:18px;}
+  .small{font-size:12px;color:var(--muted);}
+  details{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#0f141a;}
+  textarea{width:100%;min-height:110px;background:#0f141a;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;}
+
+/* === Force answer text color to white === */
+button,
+button span,
+.answer,
+.choice,
+.option {
+  color: #ffffff !important;
+}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between;">
+      <div class="row">
+        <div class="title">塗装（鋼橋）1級 学科クイズ（根拠付き）</div>
+        <span class="small">R5：全50問（A/B群）</span>
+      </div>
+      <div class="row">
+        <button class="btn" id="resetBtn" title="学習履歴（正誤・間違いリスト）を初期化">履歴リセット</button>
+        <button class="btn primary" id="exportBtn" title="学習データをJSONでエクスポート">学習データ出力</button>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button class="pill active" data-year="R5">R5</button>
+      <button class="pill" data-year="R4">R4（未収録）</button>
+      <button class="pill" data-year="R6">R6（未収録）</button>
+      <span class="small">年度を増やすには下の「年度データ追加」を使用</span>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <select id="groupSel">
+        <option value="ALL">A+B（全問）</option>
+        <option value="A">A群（真偽）</option>
+        <option value="B">B群（多肢択一）</option>
+      </select>
+
+      <select id="tagSel">
+        <option value="ALL">分野：すべて</option>
+      </select>
+
+      <label class="row small" style="gap:6px;">
+        <input type="checkbox" id="wrongOnly" />
+        間違い復習のみ
+      </label>
+
+      <label class="row small" style="gap:6px;">
+        <input type="checkbox" id="shuffle" />
+        シャッフル
+      </label>
+
+      <input id="search" placeholder="検索（語句）" style="min-width:220px;flex:1" />
+      <button class="btn" id="startBtn">開始</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="two">
+    <div class="card">
+      <div class="kpi">
+        <div class="box"><div class="small">対象問題数</div><div class="num" id="kpiTotal">-</div></div>
+        <div class="box"><div class="small">回答済</div><div class="num" id="kpiDone">-</div></div>
+        <div class="box"><div class="small">正解数</div><div class="num" id="kpiOk">-</div></div>
+        <div class="box"><div class="small">正答率</div><div class="num" id="kpiAcc">-</div></div>
+        <div class="box"><div class="small">間違い（未解消）</div><div class="num" id="kpiWrong">-</div></div>
+      </div>
+      <div class="small" style="margin-top:10px;">
+        ・各設問は「正解」「根拠（規格・便覧・法令など）」を表示。<br/>
+        ・「間違い復習のみ」をONにすると、間違った問題だけが出ます（正解すると自動で解除）。<br/>
+        ・年度データ（R4/R6等）は、下の「年度データ追加」でJSONを取り込めます。
+      </div>
+    </div>
+
+    <details class="card">
+      <summary style="cursor:pointer;font-weight:700;">年度データ追加（R4/R6…を後から入れる）</summary>
+      <div class="small" style="margin-top:10px;">
+        形式：{"R4":[{...問題...},...], "R6":[...]} のようなJSON。<br/>
+        ここに貼り付け → 取り込み。取り込んだ年度はタブで選べます。
+      </div>
+      <textarea id="importArea" placeholder='例：{"R4":[{"id":"R4-A-1","year":"R4","group":"A","format":"tf","stem":"...","answer":true,"choices":["正","誤"],"correctIndex":0,"tags":["..."],"refs":["..."],"explanation":"..."}]}'></textarea>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn primary" id="importBtn">取り込み</button>
+        <button class="btn" id="downloadBtn">index.html を保存する手順</button>
+      </div>
+    </details>
+  </div>
+
+  <div class="grid" id="quizArea" style="display:none;"></div>
+
+  <div class="footer">
+    注：このアプリはオフライン動作を優先し、外部通信を行いません。学習履歴は端末のブラウザ（localStorage）に保存されます。<br/>
+    配布：GitHub Pagesに置く場合は、このファイルをリポジトリの <b>index.html</b> としてアップロードしてください。
+  </div>
+</main>
+
+<script>
+const BANK = {"R5": [{"id": "R5-A-1", "year": "R5", "group": "A", "format": "tf", "stem": "重防食塗装とは、腐食性の厳しい環境に建設される鋼構造物の塗り替え周期を長くするため、防食性や耐久性を有する防食塗装をいう。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["概論", "防食"], "refs": ["鋼構造物の重防食の一般概念（指針類）"], "explanation": "重防食は「厳しい腐食環境で、長期耐久を狙う塗装仕様」という定義で扱われる。"}, {"id": "R5-A-2", "year": "R5", "group": "A", "format": "tf", "stem": "溶融亜鉛めっきとは、めっきする物を薬剤で洗った亜鉛の中に浸して、表面に亜鉛皮膜を作る表面処理方法をいう。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["素地調整", "亜鉛めっき"], "refs": ["溶融亜鉛めっきの一般的定義"], "explanation": "溶融亜鉛めっきは前処理（脱脂・酸洗い等）の後に溶融亜鉛浴へ浸せきし、合金層＋亜鉛皮膜を形成する。"}, {"id": "R5-A-3", "year": "R5", "group": "A", "format": "tf", "stem": "日視で塗料の色合せをする場合、北半球においては、南部からの直射日光で行うのが望ましい。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["色彩", "検査"], "refs": ["色合わせは安定光（北窓光等）が推奨される（一般的取扱い）"], "explanation": "色合わせは直射日光の影響（分光・反射・影）が大きいので、北窓光など安定した拡散光が基本。"}, {"id": "R5-A-4", "year": "R5", "group": "A", "format": "tf", "stem": "無機ジンクリッチペイントは、空気中の酸素と反応して硬化乾燥する。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["塗料", "無機ジンク"], "refs": ["無機ジンクは主に水分（湿気）を利用して硬化が進む（シリケート系）"], "explanation": "無機ジンク（シリケート系）は湿気で反応が進み、酸素「だけ」で硬化するとは言えない。"}, {"id": "R5-A-5", "year": "R5", "group": "A", "format": "tf", "stem": "日本産業規格（JIS）によれば、引っかき硬度（鉛筆法）の試験は、多層塗膜系の上層膜の硬度測定に適する試験である。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["試験", "JIS"], "refs": ["鉛筆法は塗膜表面の硬度（最上層）評価"], "explanation": "鉛筆法は塗膜の表面硬度をみるため、多層系では最上層（上塗）評価に相当する。"}, {"id": "R5-A-6", "year": "R5", "group": "A", "format": "tf", "stem": "工具の落下等により生じた塗膜の物理的欠陥は、腐食の起点とはならない。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["欠陥", "防食"], "refs": ["欠陥（素地露出等）は腐食起点となり得る"], "explanation": "塗膜欠陥で素地露出・薄膜部が生じれば、腐食電池が形成され腐食起点になり得る。"}, {"id": "R5-A-7", "year": "R5", "group": "A", "format": "tf", "stem": "ストリップベルトペイントの主な目的は、さび、汚れ、擦傷等から被塗物を一時的に保護することである。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["施工", "ストライプ塗り"], "refs": ["ストライプ塗りはエッジ・溶接部等の膜厚確保が主目的"], "explanation": "ストライプ塗りはエッジ・ボルト・溶接部など膜厚が不足しやすい部位の補強。"}, {"id": "R5-A-8", "year": "R5", "group": "A", "format": "tf", "stem": "エアスプレーガンでは、霧化空気圧を高くして吐出空気量を多くするほど、霧の粒子は粗くなる。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["施工", "スプレー"], "refs": ["霧化は一般に粒子を微細化する方向"], "explanation": "霧化空気が増えるほど一般に粒子は微細化し、粗くなるとは言いにくい。"}, {"id": "R5-A-9", "year": "R5", "group": "A", "format": "tf", "stem": "無機ジンクリッチペイントは、過度に厚塗りした場合、塗膜に割れや浮きが発生することがある。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["施工", "無機ジンク"], "refs": ["厚塗りでマッドクラック等が生じ得る"], "explanation": "無機ジンクの厚塗りはマッドクラックや割れを招きやすい。"}, {"id": "R5-A-10", "year": "R5", "group": "A", "format": "tf", "stem": "助溶剤は、真溶剤に混合することで溶解力を増したり、乾燥性を調節したりする溶剤である。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["塗料", "溶剤"], "refs": ["溶剤設計の一般概念"], "explanation": "助溶剤は溶解性・乾燥性・作業性を調整する目的で併用される。"}, {"id": "R5-A-11", "year": "R5", "group": "A", "format": "tf", "stem": "同種類の溶剤において、蒸発速度は、沸点の高い溶剤よりも沸点の低い溶剤の方が速い。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["塗料", "溶剤"], "refs": ["一般に低沸点ほど蒸発が速い"], "explanation": "同系溶剤なら低沸点ほど蒸発が速いのが基本。"}, {"id": "R5-A-12", "year": "R5", "group": "A", "format": "tf", "stem": "不飽和ポリエステル樹脂パテの硬化剤（強酸化物）は、反応熱により発火するおそれがあるので、保管や取扱いに注意する。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["安全", "化学"], "refs": ["過酸化物の取扱い注意（一般）"], "explanation": "硬化剤（過酸化物）は自己反応で発熱・発火の危険があり、分別保管等が必要。"}, {"id": "R5-A-13", "year": "R5", "group": "A", "format": "tf", "stem": "色相対比とは、同じ色でも背景色の色相が異なることで、色相がずれて見える現象をいう。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["色彩"], "refs": ["色相対比の定義"], "explanation": "背景の色相が周辺対比を起こし、対象色の見えがずれる現象。"}, {"id": "R5-A-14", "year": "R5", "group": "A", "format": "tf", "stem": "日本産業規格（JIS）によれば、無彩色は、明度の数値の後に無彩色の記号Bを付けて記数する。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["色彩", "JIS"], "refs": ["無彩色は一般にN（Neutral）で表す"], "explanation": "無彩色はN（Neutral）で表すのが一般的で、Bではない。"}, {"id": "R5-A-15", "year": "R5", "group": "A", "format": "tf", "stem": "黄と赤紫は、互いに補色である。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["色彩"], "refs": ["補色関係は黄↔青系、赤↔シアン系など（体系によるが当該は誤り）"], "explanation": "黄と赤紫は補色関係ではない（体系上）。"}, {"id": "R5-A-16", "year": "R5", "group": "A", "format": "tf", "stem": "廃棄物の処理及び清掃に関する法律関係法令によれば、原則として、廃アルカリは、一般廃棄物である。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["法令", "廃棄物"], "refs": ["廃酸・廃アルカリは原則として産業廃棄物（区分）"], "explanation": "廃酸・廃アルカリは原則として産業廃棄物区分。"}, {"id": "R5-A-17", "year": "R5", "group": "A", "format": "tf", "stem": "移動式足場（ローリングタワー）は、作業者を乗せて移動してもよい。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["安全", "足場"], "refs": ["移動は原則として無人で行い、乗車移動は禁止が一般的"], "explanation": "ローリングタワーは移動時の転倒リスクがあるため、搭乗移動は禁止が基本。"}, {"id": "R5-A-18", "year": "R5", "group": "A", "format": "tf", "stem": "金属溶射の溶射金属には、亜鉛やアルミニウム等が用いられる。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["防食", "溶射"], "refs": ["亜鉛・アルミ溶射は一般的"], "explanation": "溶射はZn/Alなどが代表的な防食金属。"}, {"id": "R5-A-19", "year": "R5", "group": "A", "format": "tf", "stem": "無機ジンクリッチペイントは、相対湿度が50％以下の場合、塗装作業を避ける必要がある。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["施工", "無機ジンク"], "refs": ["低湿度で硬化遅延が顕著になりやすい（現場管理目安）"], "explanation": "無機ジンクは硬化に湿気が必要で、低湿度では硬化不良・遅延の管理リスクが高い。"}, {"id": "R5-A-20", "year": "R5", "group": "A", "format": "tf", "stem": "Iけた橋の腹板には、補剛材を設けなくてもよい。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["構造", "橋梁"], "refs": ["腹板の補剛は座屈・設計条件に依存し“一律不要”は誤り"], "explanation": "補剛材要否は腹板高さ/板厚/スパン等の設計で決まるため“一律不要”は誤り。"}, {"id": "R5-A-21", "year": "R5", "group": "A", "format": "tf", "stem": "無機ジンクリッチペイントは、ブラスト処理した鋼材面に塗付する。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["施工", "無機ジンク", "素地調整"], "refs": ["無機ジンクは一般にブラスト面に適用"], "explanation": "無機ジンクは清浄で粗面化されたブラスト面への適用が基本。"}, {"id": "R5-A-22", "year": "R5", "group": "A", "format": "tf", "stem": "鋼道路橋防食便覧によれば、塗替え塗装において、素地調整程度が３種Aの作業方法は、ディスクサンダーやワイヤホイルなどの動力工具と手工具との併用で行う。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["素地調整", "鋼道路橋"], "refs": ["鋼道路橋塗替え要領等に記載される3種ケレンの作業方法"], "explanation": "3種ケレンは動力工具＋手工具の併用で不良部を除去し、活膜は残す。"}, {"id": "R5-A-23", "year": "R5", "group": "A", "format": "tf", "stem": "ローラーばけ塗りでは、塗面に小さなローラーマークが生じやすく、光沢がやや低下する傾向がある。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["施工", "仕上がり"], "refs": ["ローラー特有の仕上がり"], "explanation": "ローラーは肌（ローラーマーク）が出やすく、光沢もスプレーより低下しやすい。"}, {"id": "R5-A-24", "year": "R5", "group": "A", "format": "tf", "stem": "エアレススプレー塗りにおいて、スプレーパターン幅は、吹付け圧力で調整する。", "answer": false, "choices": ["正", "誤"], "correctIndex": 1, "tags": ["施工", "エアレス"], "refs": ["パターン幅は主にチップ（口径・角度）と距離で管理"], "explanation": "パターン幅は主にチップの噴射角・口径と距離で決まり、圧力は流量・霧化に影響。"}, {"id": "R5-A-25", "year": "R5", "group": "A", "format": "tf", "stem": "橋梁工事用つり足場の組立ては、一般に、橋桁の架設後に行われる。", "answer": true, "choices": ["正", "誤"], "correctIndex": 0, "tags": ["施工", "足場"], "refs": ["吊り足場は桁架設後に組立てるのが一般的"], "explanation": "吊り足場は上部構造ができてから設置するのが通常。"}, {"id": "R5-B-1", "year": "R5", "group": "B", "format": "mcq", "stem": "次の塗装法のうち、粉体塗料を用いないものはどれか。", "choices": ["電着塗装法", "流動浸せき法", "静電流動浸せき法", "静電吹付け法"], "correctIndex": 0, "tags": ["塗装法"], "refs": [], "explanation": "電着は水系（電気泳動）で粉体塗料を用いない。"}, {"id": "R5-B-2", "year": "R5", "group": "B", "format": "mcq", "stem": "塗料の調合において、塗料の粘度が高すぎる場合に生じるものはどれか。", "choices": ["膜厚の確保ができない。", "流動性が増す。", "色むらになる。", "ローラーマークが目立つ。"], "correctIndex": 3, "tags": ["施工", "粘度"], "refs": [], "explanation": "高粘度だとレベリング不良でローラーマーク等の外観不良が出やすい。"}, {"id": "R5-B-3", "year": "R5", "group": "B", "format": "mcq", "stem": "縮合重合硬化に関する記述として、適切なものはどれか。", "choices": ["硬化剤によって、樹脂が重合して硬化する。", "塗膜中の溶剤や水が蒸発後、塗膜が硬化する。", "塗膜が空気中の酸素を吸収して酸化し、重合を伴って硬化する。", "反応過程で生成したアルコールや水などが揮発して硬化塗膜を形成する。"], "correctIndex": 3, "tags": ["塗料", "硬化"], "refs": [], "explanation": "縮合反応は副生成物（水・アルコール等）を出しながら進行する。"}, {"id": "R5-B-4", "year": "R5", "group": "B", "format": "mcq", "stem": "日本産業規格（JIS）によれば、塗面の中央を指先で静かに軽くこすって塗面にすり跡が付かない乾燥状態のものはどれか。", "choices": ["指触乾燥", "半硬化乾燥", "硬化乾燥", "完全乾燥"], "correctIndex": 0, "tags": ["試験", "乾燥", "JIS"], "refs": [], "explanation": "指先で軽くこすって跡が付かないのは指触乾燥の判定例。"}, {"id": "R5-B-5", "year": "R5", "group": "B", "format": "mcq", "stem": "次のうち、耐候性に最も優れている塗料はどれか。", "choices": ["エポキシ樹脂塗料", "ガラスフレーク塗料", "油性系塗料", "ふっ素樹脂塗料"], "correctIndex": 3, "tags": ["塗料", "耐候性"], "refs": [], "explanation": "耐候性は一般にふっ素樹脂が最上位クラス。"}, {"id": "R5-B-6", "year": "R5", "group": "B", "format": "mcq", "stem": "マスキングテープの取扱いとして、適切でないものはどれか。", "choices": ["テープを貼る前の被塗面を十分に清掃しておく。", "テープを貼る前の被塗面は十分に乾燥させておく。", "テープに均一に圧力を加えて貼る。", "テープを剥がす際は、塗膜が完全に乾燥してから剥がす。"], "correctIndex": 3, "tags": ["施工", "養生"], "refs": [], "explanation": "テープは塗膜が“完全硬化後”だと切れ・段差・はがれを誘発するため、適切な時期に除去。"}, {"id": "R5-B-7", "year": "R5", "group": "B", "format": "mcq", "stem": "塗膜の欠陥とその対策の組合せとして、適切でないものはどれか。\n欠陥／対策\nはけ目…塗料の粘度を上げる。\nにじみ…適切な塗装間隔をとる。\n剥がれ…入念な素地ごしらえをする。\n白亜化…耐候性の良い塗料を選択する。", "choices": ["はけ目…塗料の粘度を上げる。", "にじみ…適切な塗装間隔をとる。", "剥がれ…入念な素地ごしらえをする。", "白亜化…耐候性の良い塗料を選択する。"], "correctIndex": 0, "tags": ["欠陥", "施工"], "refs": [], "explanation": "はけ目は粘度を上げるより、希釈・塗り方・レベリング改善が対策。"}, {"id": "R5-B-8", "year": "R5", "group": "B", "format": "mcq", "stem": "ミネラルスピリットに代表される溶剤で、一般的には塗料用シンナーに使用されるものはどれか。", "choices": ["アルコール類", "ケトン類", "芳香族炭化水素類", "脂肪族炭化水素類"], "correctIndex": 3, "tags": ["塗料", "溶剤"], "refs": [], "explanation": "ミネラルスピリットは脂肪族炭化水素系。"}, {"id": "R5-B-9", "year": "R5", "group": "B", "format": "mcq", "stem": "次のうち、気温が3℃でも塗装ができる塗料はどれか。", "choices": ["エポキシ樹脂塗料下塗", "鉛・クロムフリーさび止めペイント", "長油性フタル酸樹脂塗料中塗", "弱溶剤形ふっ素樹脂塗料上塗"], "correctIndex": 2, "tags": ["施工", "低温", "鋼道路橋"], "refs": [], "explanation": "エポキシは低温で反応が止まりやすい。長油性フタル酸（酸化重合型）は低温でも施工可能な代表例。"}, {"id": "R5-B-10", "year": "R5", "group": "B", "format": "mcq", "stem": "塗料とその希釈用シンナーの組合せとして、適切なものはどれか。", "choices": ["ポリウレタン樹脂塗料…ラッカーシンナー", "長油性フタル酸樹脂塗料…スチレンモノマー", "アミノアルキッド樹脂塗料…アクリル用シンナー", "フェノール樹脂塗料…塗料用シンナー"], "correctIndex": 3, "tags": ["塗料", "溶剤"], "refs": [], "explanation": "フェノール樹脂系は一般の塗料用シンナーの適用例がある（他は不適合）。"}, {"id": "R5-B-11", "year": "R5", "group": "B", "format": "mcq", "stem": "次のうち、塗膜に可とう性（柔軟性）を与えることを目的として使用される添加剤はどれか。", "choices": ["乾燥剤", "可塑剤", "増粘剤", "沈降防止剤"], "correctIndex": 1, "tags": ["塗料", "添加剤"], "refs": [], "explanation": "可塑剤は柔軟性付与目的。"}, {"id": "R5-B-12", "year": "R5", "group": "B", "format": "mcq", "stem": "文中の（　）内に当てはまる語句として、適切なものはどれか。\n黒い紙の上にグレーの紙を置くと、グレーの紙は実際よりも白っぽく見え、逆に白い紙の上にグレーの紙を置くと、グレーの紙は実際よりも黒く見えるが、このような現象を（　）という。", "choices": ["明度対比", "色の軽重感", "面積効果", "膨張色及び収縮色"], "correctIndex": 0, "tags": ["色彩"], "refs": [], "explanation": "背景の明暗で対象の明度が変わって見える＝明度対比。"}, {"id": "R5-B-13", "year": "R5", "group": "B", "format": "mcq", "stem": "マンセル記号5R 6/4において、6が表すものはどれか。", "choices": ["色相", "明度", "彩度", "濃度"], "correctIndex": 1, "tags": ["色彩", "マンセル"], "refs": [], "explanation": "マンセルの中央値は Value（明度）。"}, {"id": "R5-B-14", "year": "R5", "group": "B", "format": "mcq", "stem": "日本産業規格（JIS）によれば、次の安全色のうち、安全状態の意味を有するものはどれか。", "choices": ["赤紫", "黄", "緑", "赤"], "correctIndex": 2, "tags": ["安全", "JIS"], "refs": [], "explanation": "安全状態は緑（JIS安全色）。"}, {"id": "R5-B-15", "year": "R5", "group": "B", "format": "mcq", "stem": "消防法関係法令によれば、次の第四類危険物のうち、指定数量が1000リットルとされているものはどれか。", "choices": ["第一石油類（非水溶性液体）", "第二石油類（非水溶性液体）", "第三石油類（非水溶性液体）", "第四石油類"], "correctIndex": 1, "tags": ["法令", "危険物"], "refs": ["第四類の指定数量（消防法）"], "explanation": "第四類の指定数量は第二石油類が1000L（非水溶性）。"}, {"id": "R5-B-16", "year": "R5", "group": "B", "format": "mcq", "stem": "文中の（　）内に当てはまる数値として、正しいものはどれか。\n酸素欠乏症等防止規則によれば、閉じたマンホール内における壁等の危険のある箇所には、高さ（　）の梯子又はこれと同等以上の機能を有する設備を設けなければならない。", "choices": ["20cm以上", "20cm以上35cm以下", "35cm以上50cm以下", "50cm以上"], "correctIndex": 2, "tags": ["法令", "安全"], "refs": ["酸素欠乏症等防止規則（マンホール内の昇降設備）"], "explanation": "マンホール内の昇降設備の設置条件に関する規定の数値選択。"}, {"id": "R5-B-17", "year": "R5", "group": "B", "format": "mcq", "stem": "耐候性鋼材に関する記述として、適切でないものはどれか。", "choices": ["耐候性鋼材は、腐食速度を低下できる合金元素を添加した合金鋼である。", "耐候性鋼材は、高速ガードレールや支承等にも使用されている。", "耐候性鋼材は、初期腐食では、さびが発生する。", "耐候性鋼材を使用した橋梁は、腐食の危険がなくてもよい。"], "correctIndex": 3, "tags": ["材料", "耐候性鋼"], "refs": [], "explanation": "耐候性鋼でも環境条件（飛来塩分等）次第で腐食進行の懸念があり、“危険がなくてもよい”は不適切。"}, {"id": "R5-B-18", "year": "R5", "group": "B", "format": "mcq", "stem": "ショッププライマーの性能に関する記述として、適切でないものはどれか。", "choices": ["一般的に、一次防せいとして約1～2か月程度であること。", "塗膜は、塗り重ねられる塗料との付着性に優れていること。", "鋼材との付着が良く、衝撃等や耐屈曲性に優れていること。", "一次防せいされた鋼材の塗膜の乾燥には、速乾性が求められること。"], "correctIndex": 2, "tags": ["塗料", "ショッププライマー"], "refs": [], "explanation": "ショッププライマーは一次防錆＋後工程の付着性を狙うが、鋼材の衝撃・耐屈曲性そのものを向上させる趣旨ではない。"}, {"id": "R5-B-19", "year": "R5", "group": "B", "format": "mcq", "stem": "塗料の粘度と希釈に関する記述として、適切でないものはどれか。", "choices": ["希釈に不適当なシンナーを使用すると、転写点が分らない、はじく等の塗膜異常を起こすことがある。", "無溶剤形変性エポキシ樹脂塗料は、希釈してはならない。", "夏用シンナーには、蒸発速度の遅い溶剤が多く配合されている。", "塗料の粘度が高すぎると、防せい性が低下する。"], "correctIndex": 3, "tags": ["塗料", "施工", "粘度"], "refs": [], "explanation": "高粘度＝防せい性低下とは直結せず、主に作業性・外観・欠陥リスクの問題。"}, {"id": "R5-B-20", "year": "R5", "group": "B", "format": "mcq", "stem": "次のうち、塗膜の付着強さの測定方法でないものはどれか。", "choices": ["カッタ法又は碁盤目法", "電導度法", "円筒形マンドレル法", "プルオフ（ペッセル）法"], "correctIndex": 2, "tags": ["試験"], "refs": [], "explanation": "円筒形マンドレル法は曲げ（柔軟性/割れ）評価で、付着強さの直接測定ではない。"}, {"id": "R5-B-21", "year": "R5", "group": "B", "format": "mcq", "stem": "文中の（　）内に当てはまるものとして、正しいものはどれか。\n鋼道路橋防食便覧によれば、塗替え時の素地調整程度3種Aのさび面積は、（　）である。", "choices": ["5%以下", "5～15%", "15～30%", "30%以上"], "correctIndex": 2, "tags": ["素地調整", "鋼道路橋"], "refs": ["3種A（さび面積15～30%）の整理例"], "explanation": "鋼道路橋系の整理で3種Aは“さび面積15～30%”の区分として扱われる。"}, {"id": "R5-B-22", "year": "R5", "group": "B", "format": "mcq", "stem": "鋼道路橋防食便覧によれば、気温が10℃を超え30℃未満の条件下で塗装しなくてはならないのはどれか。", "choices": ["長ばく形エポキシプライマー", "無溶剤変性エポキシ樹脂塗料", "ふっ素樹脂塗料用中塗", "超厚膜形エポキシ樹脂塗料"], "correctIndex": 1, "tags": ["鋼道路橋", "施工", "環境条件"], "refs": ["無溶剤形変性エポキシは気温10℃以下・30℃以上が作業禁止（便覧系の禁止条件表）"], "explanation": "無溶剤形変性エポキシは温度条件の外では施工禁止（10℃以下・30℃以上等）として整理される。"}, {"id": "R5-B-23", "year": "R5", "group": "B", "format": "mcq", "stem": "次のうち、エアレススプレーの塗料加圧方式はどれか。", "choices": ["プランジャーポンプ式", "圧送式", "吸上げ式", "重力式"], "correctIndex": 0, "tags": ["施工", "エアレス"], "refs": [], "explanation": "エアレスは高圧ポンプ（プランジャー/ピストン）で塗料を加圧しチップで霧化。"}, {"id": "R5-B-24", "year": "R5", "group": "B", "format": "mcq", "stem": "労働安全衛生法関係法令によれば、単管を用いて構成される単管足場に関する記述として、誤っているものはどれか。", "choices": ["建地の両側面は、原則として、すきまがないようにする。", "建地を一本で、原則として、2m以下の位置に設ける。", "建地間の積載荷重は、原則として、400kgを超えない。", "建地の最高部から測って31mを超える部分の建地は、原則として、単管を2本組とする。"], "correctIndex": 1, "tags": ["法令", "足場"], "refs": [], "explanation": "単管足場の建地間隔等の基準のうち、設問の数値が不整合のものを選ぶ問題。"}, {"id": "R5-B-25", "year": "R5", "group": "B", "format": "mcq", "stem": "文中の（　）内に当てはまる数値として、正しいものはどれか。\n労働安全衛生法関係法令によれば、つり足場に使用するつり鎖は、リンクの断面の直径の減少が、当該つり鎖が製造されたときの当該リンクの断面の直径の（　）%を超えるものは使用してはならない。", "choices": ["5", "8", "10", "15"], "correctIndex": 2, "tags": ["法令", "足場", "つり鎖"], "refs": ["労働安全衛生規則（通路・足場等）等：リンク断面直径の減少10%超は使用禁止"], "explanation": "つり鎖リンクの断面直径減少が10%超は使用禁止（労働安全衛生関係）。"}]};
+
+const LS_KEY = "tosou_quiz_progress_v1";
+
+function loadProgress(){
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) {
+    return {};
+  }
+}
+function saveProgress(p){ localStorage.setItem(LS_KEY, JSON.stringify(p)); }
+
+function getYearData(year){
+  const userExtraRaw = localStorage.getItem("tosou_quiz_user_years");
+  let extra = {};
+  if(userExtraRaw){ try{ extra = JSON.parse(userExtraRaw); }catch(e){} }
+  const merged = Object.assign({}, BANK, extra);
+  return merged[year] || null;
+}
+
+let state = {
+  year: "R5",
+  group: "ALL",
+  tag: "ALL",
+  wrongOnly: false,
+  shuffle: false,
+  search: "",
+  pool: [],
+  idx: 0,
+  progress: loadProgress(),
+};
+
+function norm(s){ return (s||"").toString().trim(); }
+
+function ensureYearProgress(year){
+  if(!state.progress[year]){
+    state.progress[year] = {
+      answered: {}, // id -> {chosenIndex, correct, ts}
+      wrongSet: {}, // id -> true
+    };
+  }
+}
+
+function rebuildTagOptions(){
+  const yearData = getYearData(state.year);
+  const tagSel = document.getElementById("tagSel");
+  tagSel.innerHTML = '<option value="ALL">分野：すべて</option>';
+  if(!yearData) return;
+  const tags = new Set();
+  yearData.forEach(q => (q.tags||[]).forEach(t => tags.add(t)));
+  [...tags].sort().forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t; opt.textContent = "分野：" + t;
+    tagSel.appendChild(opt);
+  });
+}
+
+function buildPool(){
+  ensureYearProgress(state.year);
+  const yearData = getYearData(state.year);
+  if(!yearData) {
+    state.pool = [];
+    return;
+  }
+  const prog = state.progress[state.year];
+  let pool = yearData.slice();
+
+  if(state.group !== "ALL") pool = pool.filter(q => q.group === state.group);
+  if(state.tag !== "ALL") pool = pool.filter(q => (q.tags||[]).includes(state.tag));
+  if(state.search) {
+    const q = state.search.toLowerCase();
+    pool = pool.filter(x => (x.stem||"").toLowerCase().includes(q) || (x.explanation||"").toLowerCase().includes(q));
+  }
+  if(state.wrongOnly) pool = pool.filter(q => !!prog.wrongSet[q.id]);
+
+  if(state.shuffle) {
+    for(let i=pool.length-1;i>0;i--) {
+      const j = Math.floor(Math.random()*(i+1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+  } else {
+    pool.sort((a,b) => a.id.localeCompare(b.id, "ja"));
+  }
+  state.pool = pool;
+  state.idx = 0;
+}
+
+function kpi(){
+  ensureYearProgress(state.year);
+  const prog = state.progress[state.year];
+  const yearData = getYearData(state.year) || [];
+  // KPIs should reflect current pool filters except wrongSet count which is global for year
+  const total = state.pool.length;
+  let done=0, ok=0;
+  state.pool.forEach(q => {
+    const a = prog.answered[q.id];
+    if(a) { done++; if(a.correct) ok++; }
+  });
+  const wrong = Object.keys(prog.wrongSet).length;
+  document.getElementById("kpiTotal").textContent = total.toString();
+  document.getElementById("kpiDone").textContent = done.toString();
+  document.getElementById("kpiOk").textContent = ok.toString();
+  document.getElementById("kpiAcc").textContent = total ? Math.round(ok/Math.max(done,1)*100).toString() + "%" : "-";
+  document.getElementById("kpiWrong").textContent = wrong.toString();
+}
+
+function render(){
+  const area = document.getElementById("quizArea");
+  area.innerHTML = "";
+  if(state.pool.length === 0){
+    area.style.display = "block";
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = `<div class="qstem">この条件では出題できる問題がありません。<br>（年度が未収録か、フィルタ条件でゼロになっています。）</div>`;
+    area.appendChild(c);
+    kpi();
+    return;
+  }
+  area.style.display = "grid";
+  const q = state.pool[state.idx];
+  const prog = state.progress[state.year];
+  const answered = prog.answered[q.id];
+
+  const card = document.createElement("div");
+  card.className = "card";
+
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  meta.innerHTML = `<span><b>${q.id}</b></span>
+                    <span>年度:${q.year}</span>
+                    <span>群:${q.group}</span>
+                    <span>形式:${q.format==="tf"?"真偽":"四択"}</span>
+                    <span>進捗:${state.idx+1} / ${state.pool.length}</span>`;
+  card.appendChild(meta);
+
+  const stem = document.createElement("div");
+  stem.className = "qstem";
+  stem.textContent = q.stem;
+  card.appendChild(stem);
+
+  const choices = document.createElement("div");
+  choices.className = "choices";
+
+  q.choices.forEach((label, i) => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = `${["イ","ロ","ハ","ニ"][i] || ""}${q.format==="mcq" ? " " : ""}${label}`;
+    if(answered) {
+      if(i === answered.chosenIndex) btn.classList.add("chosen");
+      if(i === q.correctIndex) btn.classList.add("correct");
+      if(i === answered.chosenIndex && !answered.correct) btn.classList.add("wrong");
+      btn.disabled = true;
+    }
+    btn.addEventListener("click", () => onAnswer(q, i));
+    choices.appendChild(btn);
+  });
+  card.appendChild(choices);
+
+  if(answered){
+    const ex = document.createElement("div");
+    ex.className = "ex";
+    const ok = answered.correct;
+    ex.innerHTML = `
+      <div class="label">${ok ? "正解" : "不正解"}：あなたの回答は「${q.choices[answered.chosenIndex]}」／正解は「${q.choices[q.correctIndex]}」</div>
+      <div class="qstem">${q.explanation || "（解説準備中）"}</div>
+      <div class="refs"><b>根拠（参照）：</b> ${(q.refs && q.refs.length) ? q.refs.join(" / ") : "一般的な塗装工学・鋼橋塗装指針の範囲で整理"}</div>
+      <div class="tags">${(q.tags||[]).map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      <div class="row" style="margin-top:12px;justify-content:space-between;">
+        <button class="btn" id="prevBtn">前へ</button>
+        <div class="row">
+          <button class="btn" id="unwrongBtn" title="この問題を間違いリストから外す">間違い解除</button>
+          <button class="btn primary" id="nextBtn">次へ</button>
+        </div>
+      </div>
+    `;
+    card.appendChild(ex);
+
+    // wire buttons
+    setTimeout(() => {
+      document.getElementById("prevBtn").onclick = () => nav(-1);
+      document.getElementById("nextBtn").onclick = () => nav(1);
+      document.getElementById("unwrongBtn").onclick = () => {
+        delete prog.wrongSet[q.id];
+        saveProgress(state.progress);
+        render(); // refresh
+      };
+    }, 0);
+  } else {
+    const navRow = document.createElement("div");
+    navRow.className = "row";
+    navRow.style.marginTop = "12px";
+    navRow.style.justifyContent = "space-between";
+    navRow.innerHTML = `
+      <button class="btn" id="prevBtn">前へ</button>
+      <div class="row">
+        <button class="btn danger" id="markWrongBtn" title="この問題を手動で“要復習”にする">要復習に追加</button>
+        <button class="btn primary" id="skipBtn">スキップ</button>
+      </div>
+    `;
+    card.appendChild(navRow);
+    setTimeout(() => {
+      document.getElementById("prevBtn").onclick = () => nav(-1);
+      document.getElementById("skipBtn").onclick = () => nav(1);
+      document.getElementById("markWrongBtn").onclick = () => {
+        prog.wrongSet[q.id] = true;
+        saveProgress(state.progress);
+        render();
+      };
+    }, 0);
+  }
+
+  area.appendChild(card);
+  kpi();
+}
+
+function onAnswer(q, chosenIndex){
+  const prog = state.progress[state.year];
+  const correct = (chosenIndex === q.correctIndex);
+  prog.answered[q.id] = {chosenIndex, correct, ts: Date.now()};
+  if(!correct) prog.wrongSet[q.id] = true;
+  if(correct && prog.wrongSet[q.id]) delete prog.wrongSet[q.id];
+  saveProgress(state.progress);
+  render();
+}
+
+function nav(delta){
+  if(state.pool.length === 0) return;
+  state.idx = (state.idx + delta + state.pool.length) % state.pool.length;
+  render();
+}
+
+function bindControls(){
+  // Year tabs
+  document.querySelectorAll(".pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".pill").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.year = btn.getAttribute("data-year");
+      ensureYearProgress(state.year);
+      rebuildTagOptions();
+      buildPool();
+      render();
+    });
+  });
+
+  document.getElementById("groupSel").addEventListener("change", (e)=>{
+    state.group = e.target.value;
+    buildPool(); render();
+  });
+  document.getElementById("tagSel").addEventListener("change", (e)=>{
+    state.tag = e.target.value;
+    buildPool(); render();
+  });
+  document.getElementById("wrongOnly").addEventListener("change", (e)=>{
+    state.wrongOnly = e.target.checked;
+    buildPool(); render();
+  });
+  document.getElementById("shuffle").addEventListener("change", (e)=>{
+    state.shuffle = e.target.checked;
+    buildPool(); render();
+  });
+  document.getElementById("search").addEventListener("input", (e)=>{
+    state.search = e.target.value.trim();
+  });
+  document.getElementById("startBtn").addEventListener("click", ()=>{
+    buildPool(); render();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    if(!confirm("この端末の学習履歴（全年度）を削除します。よろしいですか？")) return;
+    localStorage.removeItem(LS_KEY);
+    state.progress = loadProgress();
+    ensureYearProgress(state.year);
+    buildPool(); render();
+  });
+
+  document.getElementById("exportBtn").addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(state.progress, null, 2)], {type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "tosou_quiz_progress.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  document.getElementById("importBtn").addEventListener("click", ()=>{
+    const txt = document.getElementById("importArea").value.trim();
+    if(!txt) return alert("JSONが空です。");
+    try {
+      const obj = JSON.parse(txt);
+      const raw = localStorage.getItem("tosou_quiz_user_years");
+      let base = raw ? JSON.parse(raw) : {};
+      base = Object.assign(base, obj);
+      localStorage.setItem("tosou_quiz_user_years", JSON.stringify(base));
+      alert("取り込みました。年度タブを切り替えて確認してください。");
+    } catch(e) {
+      alert("JSONの形式が不正です。");
+    }
+  });
+
+  document.getElementById("downloadBtn").addEventListener("click", ()=>{
+    alert("【保存手順】\n1) このページをPCなら Ctrl+S（スマホならブラウザの共有/保存機能）\n2) ファイル名を index.html にする\n3) GitHub Pagesに置く場合はリポジトリ直下に index.html をアップロード");
+  });
+}
+
+function init(){
+  ensureYearProgress(state.year);
+  rebuildTagOptions();
+  buildPool();
+  bindControls();
+  render();
+}
+
+init();
+</script>
+</body>
+</html>
