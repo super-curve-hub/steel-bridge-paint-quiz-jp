@@ -1,1 +1,0 @@
-# steel-bridge-paint-quiz-jp
